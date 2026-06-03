@@ -1,0 +1,7 @@
+.git
+goldens/
+__pycache__/
+.pytest_cache/
+*.pyc
+hrx-venv/
+hrx/
