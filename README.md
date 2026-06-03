@@ -51,6 +51,23 @@ HRX_AB_MODE=compare pytest    # assert vs goldens (run while HRX is active)
 - MLP / CNN / ResNet-18 training: loss decreases **and** matches native
   (`tests/test_train.py`)
 
+## Stress / endurance (opt-in)
+
+A separate, longer job (`@pytest.mark.stress`, excluded from the presubmit) that
+asserts hrx-on-HIP stays stable and correct under load — no crash / NaN / leak:
+soak training, allocator churn, multi-stream concurrency, sustained kernel
+dispatch, repeated large matmul, and a mixed-op soak (`tests/test_stress.py`).
+Runs on HRX only (stability invariants, not a native A/B):
+
+```bash
+./run_stress.sh                       # default load
+HRX_STRESS_SCALE=4 ./run_stress.sh    # 4x longer soak for a nightly job
+```
+
+Leak detection warms up first (torch allocates ~160 MB of one-time persistent
+CUDA state — identical on native and HRX, not freed by `empty_cache()`), then
+measures per-iteration growth, so one-time state is not mistaken for a leak.
+
 ## Out of scope (known gap)
 
 DDP/FSDP: RCCL topology discovery needs a real PCIe BDF, which HRX does not yet
