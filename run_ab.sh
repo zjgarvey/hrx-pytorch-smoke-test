@@ -32,7 +32,15 @@ PYTEST_ARGS="${PYTEST_ARGS:--q -ra}"
 
 # shellcheck disable=SC1091
 source "$VENV/bin/activate"
-export HRX_GPU_DRIVER=amdgpu AMD_SERIALIZE_KERNEL=1
+# Async by default — the smoke must exercise real queueing/overlap.
+# HRX_AB_SERIALIZE=1 re-enables serialized kernels (debug aid: faults surface
+# at the offending launch instead of at the next sync).
+export HRX_GPU_DRIVER=amdgpu
+if [ "${HRX_AB_SERIALIZE:-0}" = "1" ]; then
+  export AMD_SERIALIZE_KERNEL=1
+else
+  unset AMD_SERIALIZE_KERNEL || true
+fi
 export HRX_AB_GOLDEN_DIR="$GOLDEN_DIR"
 export HRX_BUILD_DIR="${HRX_BUILD_DIR:-}"   # consumed by use_hrx.sh to find the binding
 unset LD_PRELOAD || true

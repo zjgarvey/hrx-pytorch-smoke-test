@@ -1,3 +1,6 @@
 # Test-harness deps. torch / torchvision come from the nightly ROCm venv and are
 # intentionally NOT pinned here (the suite runs against whatever the venv ships).
 pytest>=7
+# The GPU bug classes this suite exists for include device-side hangs; without
+# a deadline a hang reads as "still running" instead of FAIL.
+pytest-timeout>=2

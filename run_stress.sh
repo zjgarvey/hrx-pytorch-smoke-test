@@ -17,7 +17,14 @@ USE_ROCM="${USE_ROCM:-$HERE/scripts/use_rocm.sh}"
 
 # shellcheck disable=SC1091
 source "$VENV/bin/activate"
-export HRX_GPU_DRIVER=amdgpu AMD_SERIALIZE_KERNEL=1
+# Async by default — stress must stress real queueing. HRX_AB_SERIALIZE=1 for
+# the serialized debug aid.
+export HRX_GPU_DRIVER=amdgpu
+if [ "${HRX_AB_SERIALIZE:-0}" = "1" ]; then
+  export AMD_SERIALIZE_KERNEL=1
+else
+  unset AMD_SERIALIZE_KERNEL || true
+fi
 export HRX_BUILD_DIR="${HRX_BUILD_DIR:-}"
 unset LD_PRELOAD || true
 cd "$HERE"
